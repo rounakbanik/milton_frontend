@@ -1,0 +1,57 @@
+div {
+  box-sizing: border-box;
+}
+
+.mainContainer {
+  margin: 10px auto;
+  width: 800px;
+  max-width: 100%;
+  margin-top: 50px;
+  padding: 20px;
+}
+
+.dataContainer {
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.header {
+  text-align: center;
+  background: -webkit-linear-gradient(-70deg, #a2facf 0%, #64acff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header h1 { 
+  font-size: 48px;
+  font-weight: 600;  
+}
+
+.bio {
+  text-align: center;
+  color: #8193b2;
+  font-size: 18px;
+  line-height: 27px;
+  padding: 20px;
+}
+
+.postButton {
+  cursor: pointer;
+  margin-top: 16px;
+  font-size: 16px;
+  background: -webkit-linear-gradient(-70deg, #a2facf 0%, #64acff 100%);
+  width: 250px;
+  margin: 16px auto;
+  padding: 8px;
+  border: 0;
+  border-radius: 5px;  
+}
+
+.connectButton {
+  background: -webkit-linear-gradient(-70deg, #ff7170 0%, #ffe57f 100%);
+}
+
+p.error-message {
+  color: red;
+}
