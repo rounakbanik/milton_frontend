@@ -15,6 +15,7 @@ export default function App() {
   const [postView, setPostView] = React.useState(false);
   const [postStatus, setPostStatus] = React.useState(null);
   const [posts, setPosts] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
@@ -48,6 +49,7 @@ export default function App() {
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       console.log("Found an account! Address: ", accounts[0]);
       setCurrentAccount(accounts[0]);
+      getAllPosts();
 
     } catch (err) {
       console.log(err)
@@ -55,6 +57,8 @@ export default function App() {
   }
 
   const getAllPosts = React.useCallback(async () => {
+
+    setIsLoading(true);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
@@ -70,9 +74,12 @@ export default function App() {
         timestamp: new Date(post.timestamp * 1000),
       }
     })
+
+    cleanPosts.reverse();
     console.log(cleanPosts);
 
     setPosts(cleanPosts);
+    setIsLoading(false);
 
   }, []);
 
@@ -101,6 +108,8 @@ export default function App() {
 
       posts = await miltonContract.getAllPosts();
       console.log("The total number of posts is", posts.length);
+
+      setPosts(prevState => [{ title, url, category, description, timestamp: new Date() }, ...prevState])
 
       setPostStatus('success');
     } catch (err) {
@@ -159,7 +168,8 @@ export default function App() {
         </div>}
       </div>
 
-      <PostList posts={posts} />
+      {isLoading && currentAccount && <div class='post-loader' />}
+      {currentAccount && !isLoading && <PostList posts={posts} />}
     </div>
   );
 }

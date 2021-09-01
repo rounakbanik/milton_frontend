@@ -55,3 +55,13 @@ div {
 p.error-message {
   color: red;
 }
+
+.post-loader {
+  border: 10px solid #f3f3f3; /* Light grey */
+  border-top: 10px solid #64acff;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+  margin: 50px auto;
+}
