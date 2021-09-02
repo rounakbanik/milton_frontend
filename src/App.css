@@ -33,7 +33,13 @@ div {
   color: #8193b2;
   font-size: 18px;
   line-height: 27px;
-  padding: 20px;
+  padding: 10px;
+}
+
+.offer {
+  color: white;
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .postButton {

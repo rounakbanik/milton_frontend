@@ -9,6 +9,7 @@ function Post(props) {
             </div>
             <p className='ip-time'>{props.post.timestamp.toDateString()}</p>
             <p className='ip-description'>{props.post.description}</p>
+            {!!props.post.winner && <p className='ether-winner'><span role='img' aria-label='emoji'>🎉 </span>  This post won 0.0001 ETH!</p>}
         </div>
     )
 }

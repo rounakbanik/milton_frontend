@@ -6,8 +6,10 @@ import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
 import { archivePosts } from "./archives/data";
 
+const cleanArchivePosts = archivePosts.map(post => ({ ...post, timestamp: new Date(post.timestamp) }));
+
 // Contract variables
-const contractAddress = '0x2919EA0521354325B1260287F8bb914A283815e3';
+const contractAddress = '0xC5D38A26B2b28f97D2C738B3ea423De4Dc538d9b';
 const contractABI = abi.abi;
 
 export default function App() {
@@ -82,7 +84,7 @@ export default function App() {
     const miltonContract = new ethers.Contract(contractAddress, contractABI, signer);
 
     let resultPosts = await miltonContract.getAllPosts();
-    console.log(resultPosts);
+
     let cleanPosts = resultPosts.map(post => {
       return {
         title: post.title,
@@ -96,7 +98,7 @@ export default function App() {
 
     cleanPosts.reverse();
 
-    let cleanArchivePosts = archivePosts.map(post => ({ ...post, timestamp: new Date(post.timestamp) }));
+    //let cleanArchivePosts = archivePosts.map(post => ({ ...post, timestamp: new Date(post.timestamp) }));
 
     setPosts([...cleanPosts, ...cleanArchivePosts]);
     setIsLoading(false);
@@ -115,7 +117,6 @@ export default function App() {
     const miltonContract = new ethers.Contract(contractAddress, contractABI, signer);
 
     let posts = await miltonContract.getAllPosts();
-    console.log("The total number of posts is", posts.length);
 
     let postTxn;
 
@@ -127,12 +128,8 @@ export default function App() {
       console.log("Mined- ", postTxn.hash);
 
       posts = await miltonContract.getAllPosts();
-      console.log("The total number of posts is", posts.length);
 
-      //let newPost = { title, url, category, description, timestamp: new Date() }
-
-      //setPosts(prevState => [newPost, ...prevState]);
-      setPosts(cleanPostList(posts));
+      setPosts([...cleanPostList(posts), ...cleanArchivePosts]);
 
       setPostStatus('success');
     } catch (err) {
@@ -142,7 +139,6 @@ export default function App() {
   }
 
   const postViewHandler = (e) => {
-    console.log('Hit it!');
     setPostView(true);
     setPostStatus(null);
   }
@@ -168,6 +164,8 @@ export default function App() {
         <div className="bio">
           Create posts, add links, tag categories, and preserve your ideas on the Ethereum blockchain for posterity.
         </div>
+
+        <div className='offer'>Limited time offer: Win 0.0001 ETH for posting!</div>
 
         {currentAccount && !postView && postStatus !== 'mining' && <button className="postButton" onClick={postViewHandler}>
           Create a Post

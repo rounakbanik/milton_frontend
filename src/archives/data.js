@@ -65,31 +65,10 @@ export const archivePosts = [
         "timestamp": "2021-09-01T21:22:36.000Z"
     },
     {
-        "title": "Top Board Games",
-        "url": "https://boardgamegeek.com/browse/boardgame",
-        "description": "The best board games of all time, according to Board Game Geek.",
-        "category": "games",
-        "timestamp": "2021-09-01T19:48:15.000Z"
-    },
-    {
-        "title": "Drive All Night by Glen Hansard",
-        "url": "https://www.youtube.com/watch?v=BkQpxOs6K6w",
-        "description": "Glen Hansard's cover of Bruce Springsteen's timeless classic.",
-        "category": "other",
-        "timestamp": "2021-09-01T19:38:00.000Z"
-    },
-    {
         "title": "To me IRL, for me IRL",
         "url": "https://www.reddit.com/r/2meirl4meirl/comments/pfnhk1/2meirl4meirl/",
         "description": "Why do men stay in the car for minutes before arriving home?",
         "category": "memes",
         "timestamp": "2021-09-01T19:35:00.000Z"
-    },
-    {
-        "title": "Pokemon: Legends Arceus is going to be hard",
-        "url": "https://screenrant.com/pokemon-legends-arceus-difficult-inventory/",
-        "description": "According to certain leaks, Pokemon: Legends Arceus is touted to be one of the hardest games in the mainline series.",
-        "category": "games",
-        "timestamp": "2021-09-01T19:33:00.000Z"
     },
 ]
