@@ -4,9 +4,10 @@ import './App.css';
 import abi from './contracts/Milton.json';
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
+import { archivePosts } from "./archives/data";
 
 // Contract variables
-const contractAddress = '0xBDAb1F857dC80968022784cc1C868820BFD2F7c5';
+const contractAddress = '0x2919EA0521354325B1260287F8bb914A283815e3';
 const contractABI = abi.abi;
 
 export default function App() {
@@ -56,6 +57,22 @@ export default function App() {
     }
   }
 
+  const cleanPostList = (postList) => {
+    let newPosts = postList.map(post => {
+      return {
+        title: post.title,
+        url: post.url,
+        description: post.description,
+        category: post.category,
+        timestamp: new Date(post.timestamp * 1000),
+        winner: post.winner,
+      }
+    });
+
+    newPosts.reverse();
+    return newPosts;
+  }
+
   const getAllPosts = React.useCallback(async () => {
 
     setIsLoading(true);
@@ -65,6 +82,7 @@ export default function App() {
     const miltonContract = new ethers.Contract(contractAddress, contractABI, signer);
 
     let resultPosts = await miltonContract.getAllPosts();
+    console.log(resultPosts);
     let cleanPosts = resultPosts.map(post => {
       return {
         title: post.title,
@@ -72,13 +90,15 @@ export default function App() {
         description: post.description,
         category: post.category,
         timestamp: new Date(post.timestamp * 1000),
+        winner: post.winner,
       }
     })
 
     cleanPosts.reverse();
-    console.log(cleanPosts);
 
-    setPosts(cleanPosts);
+    let cleanArchivePosts = archivePosts.map(post => ({ ...post, timestamp: new Date(post.timestamp) }));
+
+    setPosts([...cleanPosts, ...cleanArchivePosts]);
     setIsLoading(false);
 
   }, []);
@@ -109,7 +129,10 @@ export default function App() {
       posts = await miltonContract.getAllPosts();
       console.log("The total number of posts is", posts.length);
 
-      setPosts(prevState => [{ title, url, category, description, timestamp: new Date() }, ...prevState])
+      //let newPost = { title, url, category, description, timestamp: new Date() }
+
+      //setPosts(prevState => [newPost, ...prevState]);
+      setPosts(cleanPostList(posts));
 
       setPostStatus('success');
     } catch (err) {
@@ -168,7 +191,7 @@ export default function App() {
         </div>}
       </div>
 
-      {isLoading && currentAccount && <div class='post-loader' />}
+      {isLoading && currentAccount && <div className='post-loader' />}
       {currentAccount && !isLoading && <PostList posts={posts} />}
     </div>
   );
