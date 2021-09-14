@@ -5,6 +5,7 @@ import abi from './contracts/Milton.json';
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
 import { archivePosts } from "./archives/data";
+import { AlchemyProvider } from "@ethersproject/providers";
 
 const cleanArchivePosts = archivePosts.map(post => ({ ...post, timestamp: new Date(post.timestamp) }));
 
@@ -19,6 +20,7 @@ export default function App() {
   const [postStatus, setPostStatus] = React.useState(null);
   const [posts, setPosts] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [metamaskError, setMetamaskError] = React.useState(null);
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
@@ -31,12 +33,15 @@ export default function App() {
     }
 
     const accounts = await ethereum.request({ method: 'eth_accounts' });
+    const network = await ethereum.request({ method: 'eth_chainId' });
 
-    if (accounts.length !== 0) {
+    if (accounts.length !== 0 && network.toString() === '0x4') {
       const account = accounts[0];
       console.log("Found an authorized account: ", account);
+      setMetamaskError(false);
       setCurrentAccount(account);
     } else {
+      setMetamaskError(true);
       console.log("No authorized account found");
     }
   }
@@ -49,10 +54,19 @@ export default function App() {
     }
 
     try {
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      console.log("Found an account! Address: ", accounts[0]);
-      setCurrentAccount(accounts[0]);
-      getAllPosts();
+      const network = await ethereum.request({ method: 'eth_chainId' });
+
+      if (network.toString() === '0x4') {
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        console.log("Found an account! Address: ", accounts[0]);
+        setMetamaskError(null);
+        setCurrentAccount(accounts[0]);
+      }
+
+      else {
+        setMetamaskError(true);
+      }
+
 
     } catch (err) {
       console.log(err)
@@ -78,8 +92,17 @@ export default function App() {
   const getAllPosts = React.useCallback(async () => {
 
     setIsLoading(true);
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
+
+    // Use user account if it is connected to Rinkeby, else use default Alchemy Provider
+    let signer;
+
+    if (currentAccount) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+    }
+    else {
+      signer = new AlchemyProvider('rinkeby')
+    }
 
     const miltonContract = new ethers.Contract(contractAddress, contractABI, signer);
 
@@ -98,12 +121,10 @@ export default function App() {
 
     cleanPosts.reverse();
 
-    //let cleanArchivePosts = archivePosts.map(post => ({ ...post, timestamp: new Date(post.timestamp) }));
-
     setPosts([...cleanPosts, ...cleanArchivePosts]);
     setIsLoading(false);
 
-  }, []);
+  }, [currentAccount]);
 
   const createPost = async ({ title, url, description, category }) => {
 
@@ -150,47 +171,55 @@ export default function App() {
   React.useEffect(() => {
     checkIfWalletIsConnected();
     getAllPosts();
+
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', (_chainId) => window.location.reload());
+    }
+
   }, [getAllPosts]);
 
   return (
-    <div className="mainContainer">
+    <React.Fragment>
+      {metamaskError && <div className='metamask-error'>Please make sure you are connected to the Rinkeby Network on Metamask!</div>}
+      <div className="mainContainer">
 
-      <div className="dataContainer">
-        <div className="header">
-          <h1> <span role='img' aria-label='logo'>🦁 </span> Milton</h1>
-          <h2> A Decentralized Reddit </h2>
+        <div className="dataContainer">
+          <div className="header">
+            <h1> <span role='img' aria-label='logo'>🦁 </span> Milton</h1>
+            <h2> A Decentralized Reddit </h2>
+          </div>
+
+          <div className="bio">
+            Create posts, add links, tag categories, and preserve your ideas on the Ethereum blockchain for posterity.
+          </div>
+
+          <div className='offer'>Limited time offer: Win 0.0001 ETH for posting!</div>
+
+          {currentAccount && !postView && postStatus !== 'mining' && <button className="postButton" onClick={postViewHandler}>
+            Create a Post
+          </button>}
+          {!currentAccount && <button className="postButton connectButton" onClick={connectWallet}>
+            Connect Wallet
+          </button>}
+          {currentAccount && postView && <PostForm onCancel={cancelPostHandler}
+            onFormSubmit={createPost} />}
+          {!postView && <div className='post-submission'>
+            {postStatus === 'success' && <div className={postStatus}>
+              <p>Post successful!</p>
+            </div>}
+            {postStatus === 'mining' && <div className={postStatus}>
+              <div className='loader' />
+              <span>Transaction is mining</span>
+            </div>}
+            {postStatus === 'error' && <div className={postStatus}>
+              <p>Transaction failed. Please try again.</p>
+            </div>}
+          </div>}
         </div>
 
-        <div className="bio">
-          Create posts, add links, tag categories, and preserve your ideas on the Ethereum blockchain for posterity.
-        </div>
-
-        <div className='offer'>Limited time offer: Win 0.0001 ETH for posting!</div>
-
-        {currentAccount && !postView && postStatus !== 'mining' && <button className="postButton" onClick={postViewHandler}>
-          Create a Post
-        </button>}
-        {!currentAccount && <button className="postButton connectButton" onClick={connectWallet}>
-          Connect Wallet
-        </button>}
-        {currentAccount && postView && <PostForm onCancel={cancelPostHandler}
-          onFormSubmit={createPost} />}
-        {!postView && <div className='post-submission'>
-          {postStatus === 'success' && <div className={postStatus}>
-            <p>Post successful!</p>
-          </div>}
-          {postStatus === 'mining' && <div className={postStatus}>
-            <div className='loader' />
-            <span>Transaction is mining</span>
-          </div>}
-          {postStatus === 'error' && <div className={postStatus}>
-            <p>Transaction failed. Please try again.</p>
-          </div>}
-        </div>}
+        {isLoading && <div className='post-loader' />}
+        {!isLoading && <PostList posts={posts} />}
       </div>
-
-      {isLoading && currentAccount && <div className='post-loader' />}
-      {currentAccount && !isLoading && <PostList posts={posts} />}
-    </div>
+    </React.Fragment>
   );
 }
